@@ -1,7 +1,9 @@
 package com.intelycare.searchengine.commands;
 
 import com.intelycare.searchengine.exception.SearchEngineException;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static com.intelycare.searchengine.commands.IndexCommand.INDEX;
@@ -18,7 +20,7 @@ public class StringCommandParser {
 
         var command = arguments.get(0);
 
-        switch (command){
+        switch (command) {
             case INDEX:
                 return parseIndexCommand(arguments);
             case QUERY:
@@ -28,22 +30,22 @@ public class StringCommandParser {
         }
     }
 
-    private static QueryCommand parseQueryCommand(ArrayList<String> arguments) {
-        var searchTerm = arguments.get(1);
+    private static QueryCommand parseQueryCommand(List<String> arguments) {
+        var searchTerm = String.join("", arguments.subList(1, arguments.size()));
         return new QueryCommand(searchTerm);
     }
 
-    private static IndexCommand parseIndexCommand(ArrayList<String> arguments) {
+    private static IndexCommand parseIndexCommand(List<String> arguments) {
         var index = Integer.parseInt(arguments.get(1));
 
         if (arguments.size() < 3) {
             throw new SearchEngineException("Index query should have at least one argument");
         }
 
-        removeFirstTwoElements(arguments);
-        validateForSpecialChars(arguments);
+        var indexArguments = arguments.subList(2, arguments.size());
+        validateForSpecialChars(indexArguments);
 
-        return new IndexCommand(index, arguments);
+        return new IndexCommand(index, indexArguments);
     }
 
     private static void validateForSpecialChars(List<String> arguments) {
@@ -51,11 +53,6 @@ public class StringCommandParser {
         if (!argumentsLine.matches("[a-zA-Z]+")) {
             throw new SearchEngineException("Index arguments should not have special characters");
         }
-    }
-
-    private static void removeFirstTwoElements(ArrayList<String> arguments) {
-        arguments.remove(0);
-        arguments.remove(0);
     }
 
 }

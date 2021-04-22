@@ -5,6 +5,7 @@ import com.intelycare.searchengine.commands.QueryCommand;
 import com.intelycare.searchengine.commands.StringCommandParser;
 import com.intelycare.searchengine.exception.SearchEngineException;
 import org.junit.Test;
+
 import java.util.List;
 
 public class StringCommandParseTest {
