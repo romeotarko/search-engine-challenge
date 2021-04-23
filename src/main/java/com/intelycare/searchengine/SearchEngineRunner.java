@@ -10,8 +10,12 @@ public class SearchEngineRunner {
 
     public static void main(String args[]) {
         Scanner in = new Scanner(System.in);
+
         while (true) {
+            print("Enter 'index' command for inserting elements to a specific index to a database: (eg. index 2 soup salt ...etc)");
+            print("Enter 'query' command for searching by value and returns the database index for that value: (eg. query soup)");
             print("Enter command: ");
+
             var input = in.nextLine();
             if (input.equals("exit")) {
                 break;

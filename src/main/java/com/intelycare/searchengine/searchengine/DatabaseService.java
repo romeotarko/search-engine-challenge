@@ -18,6 +18,8 @@ public class DatabaseService {
     private static final String OR = "|";
     private static final String AND = "&";
     private static final Set<String> ALLOWED_OPERATORS = Set.of(OPEN_BRACE, CLOSE_BRACE, OR, AND);
+    private static String partOne;
+    private static String partTwo;
 
 
     static {
@@ -46,38 +48,56 @@ public class DatabaseService {
             }
 
             if (searchTerm.contains("(") && searchTerm.contains(")")) {
-                var operator = searchTerm.contains(OR) ? OR : AND;
-                var firstElement = searchTerm.substring(searchTerm.indexOf(OPEN_BRACE) + 1, searchTerm.indexOf(operator));
-                var secondElement = searchTerm.substring(searchTerm.indexOf(operator) + 1, searchTerm.indexOf(CLOSE_BRACE));
-                var foundFirstIndex = DATA.entrySet()
-                        .stream()
-                        .filter(entry -> entry.getValue().contains(firstElement))
-                        .map(Map.Entry::getKey).findFirst().get();
+                var searchTermInsideBraces = searchTerm.
+                        substring(searchTerm.indexOf(OPEN_BRACE), searchTerm.indexOf(CLOSE_BRACE));
 
-                var foundSecondIndex = DATA.entrySet()
-                        .stream()
-                        .filter(entry -> entry.getValue().contains(secondElement))
-                        .map(Map.Entry::getKey).findFirst().get();
+                var operator = searchTermInsideBraces.contains(OR) ? OR : AND;
 
-                if (searchTerm.contains(OR)) {
+                var firstElement = searchTerm
+                        .substring(searchTerm.indexOf(OPEN_BRACE) + 1, searchTerm.indexOf(operator));
+                var secondElement = searchTerm
+                        .substring(searchTerm.indexOf(operator) + 1, searchTerm.indexOf(CLOSE_BRACE));
 
-                    if (foundFirstIndex != null) {
+                var foundFirstIndex = getElementIndex(firstElement);
 
-                        indexesToReturn.add(foundFirstIndex.toString());
+                var foundSecondIndex = getElementIndex(secondElement);
 
-                    } else if (foundSecondIndex != null) {
+                if (foundFirstIndex != null || foundSecondIndex != null) {
+                    if (searchTermInsideBraces.contains(OR)) {
 
-                        indexesToReturn.add(foundSecondIndex.toString());
+                        if (foundFirstIndex != null) {
+
+                            indexesToReturn.add(foundFirstIndex);
+
+                        } else if (foundSecondIndex != null) {
+
+                            indexesToReturn.add(foundSecondIndex);
+                        }
+                    } else if (searchTermInsideBraces.contains(AND)) {
+                        indexesToReturn.add(foundFirstIndex);
+                        indexesToReturn.add(foundSecondIndex);
                     }
-                } else if (searchTerm.contains(AND)) {
-                    indexesToReturn.add(foundFirstIndex.toString());
-                    indexesToReturn.add(foundSecondIndex.toString());
                 }
-                return "Query result " + String.join(",", indexesToReturn);
             }
 
+            if (searchTerm.substring(searchTerm.indexOf(CLOSE_BRACE)).contains(OR) && indexesToReturn.isEmpty()) {
 
-            throw new SearchEngineException("Searching not implemented yet!");
+                var foundIndex = getElementIndex(searchTerm.substring(searchTerm.indexOf(OR) + 1));
+                if(foundIndex != null){
+                    indexesToReturn.add(foundIndex);
+                }
+
+            } else if (searchTerm.substring(searchTerm.indexOf(CLOSE_BRACE)).contains(AND)) {
+
+                var foundIndex = getElementIndex(searchTerm.substring(searchTerm.lastIndexOf(AND) + 1));
+                if(foundIndex != null){
+                    indexesToReturn.add(foundIndex);
+                }
+            }
+
+            return indexesToReturn.isEmpty() ? "Query error message" : "Query result " + String.join(",", indexesToReturn);
+
+
         }
 
         if (abstractCommand instanceof IndexCommand) {
@@ -95,6 +115,15 @@ public class DatabaseService {
 
     public static List<String> getTokensByIndex(Integer index) {
         return DATA.get(index);
+    }
+
+    public static String getElementIndex(String element) {
+        var foundElement = DATA.entrySet()
+                .stream()
+                .filter(entry -> entry.getValue().contains(element))
+                .map(Map.Entry::getKey).findFirst();
+
+        return foundElement.isEmpty() ? null : foundElement.get().toString();
     }
 
     private static void populateDatabase() {

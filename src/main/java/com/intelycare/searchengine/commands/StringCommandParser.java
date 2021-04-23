@@ -50,7 +50,7 @@ public class StringCommandParser {
 
     private static void validateForSpecialChars(List<String> arguments) {
         var argumentsLine = String.join("", arguments);
-        if (!argumentsLine.matches("[a-zA-Z]+")) {
+        if (!(argumentsLine.matches("[a-zA-Z]+"))) {
             throw new SearchEngineException("Index arguments should not have special characters");
         }
     }

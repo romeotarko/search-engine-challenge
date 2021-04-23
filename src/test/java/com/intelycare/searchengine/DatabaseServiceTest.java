@@ -20,7 +20,6 @@ public class DatabaseServiceTest {
     }
 
     @Test
-
     public void should_query_with_one_term() {
         DatabaseService.executeCommand(new IndexCommand(1, List.of("searchTerm", "anotherTerm")));
         DatabaseService.executeCommand(new IndexCommand(2, List.of("searchTerm", "secondTerm")));
@@ -55,6 +54,66 @@ public class DatabaseServiceTest {
 
         var returnMessage = DatabaseService.executeCommand(queryCommand);
 
+        assert returnMessage != null;
+        assert returnMessage.equals("Query error message");
+    }
+
+    @Test
+    public void should_find_one_index(){
+        DatabaseService.executeCommand(new IndexCommand(1, List.of("searchTerm", "anotherTerm")));
+        DatabaseService.executeCommand(new IndexCommand(2, List.of("searchTerm", "secondTerm")));
+        var queryCommand = new QueryCommand("query (searchTerm | searchTermm) & third");
+        var returnMessage = DatabaseService.executeCommand(queryCommand);
+        assert returnMessage != null;
+        assert returnMessage.equals("Query result 1");
+    }
+
+    @Test
+    public void should_find_two_index(){
+        DatabaseService.executeCommand(new IndexCommand(1, List.of("searchTerm", "anotherTerm")));
+        DatabaseService.executeCommand(new IndexCommand(2, List.of("searchTerm", "secondTerm")));
+        var queryCommand = new QueryCommand("query (searchTermmm | searchTerm) & third");
+        var returnMessage = DatabaseService.executeCommand(queryCommand);
+        assert returnMessage != null;
+        assert returnMessage.equals("Query result 2");
+    }
+
+    @Test
+    public void should_find_three_index(){
+        DatabaseService.executeCommand(new IndexCommand(1, List.of("searchTerm", "anotherTerm")));
+        DatabaseService.executeCommand(new IndexCommand(2, List.of("searchTerm", "secondTerm","thirdTerm")));
+        var queryCommand = new QueryCommand("query (searchTerm | secondTerm) & thirdTerm");
+        var returnMessage = DatabaseService.executeCommand(queryCommand);
+        assert returnMessage != null;
+        assert returnMessage.equals("Query result 1,2,3");
+    }
+
+    @Test
+    public void should_find_two_index_by_another_operator(){
+        DatabaseService.executeCommand(new IndexCommand(1, List.of("searchTerm", "anotherTerm")));
+        DatabaseService.executeCommand(new IndexCommand(2, List.of("searchTerm", "secondTerm","thirdTerm")));
+        var queryCommand = new QueryCommand("query (searchTerm & secondTerm) | thirdTerm");
+        var returnMessage = DatabaseService.executeCommand(queryCommand);
+        assert returnMessage != null;
+        assert returnMessage.equals("Query result 1,2");
+    }
+
+    @Test
+    public void should_find_three_index_by_another_operator(){
+        DatabaseService.executeCommand(new IndexCommand(1, List.of("searchTerm", "anotherTerm")));
+        DatabaseService.executeCommand(new IndexCommand(2, List.of("searchTerm", "secondTerm","thirdTerm")));
+        var queryCommand = new QueryCommand("query (searchTerm & secondTerm) & thirdTerm");
+        var returnMessage = DatabaseService.executeCommand(queryCommand);
+        assert returnMessage != null;
+        assert returnMessage.equals("Query result 1,2,3");
+    }
+
+    @Test
+    public void shouldnt_find_nothing(){
+        DatabaseService.executeCommand(new IndexCommand(1, List.of("searchTerm", "anotherTerm")));
+        DatabaseService.executeCommand(new IndexCommand(2, List.of("searchTerm", "secondTerm","thirdTerm")));
+        var queryCommand = new QueryCommand("query (searchTermmm | secondTermmm) & thirdTermmm");
+        var returnMessage = DatabaseService.executeCommand(queryCommand);
         assert returnMessage != null;
         assert returnMessage.equals("Query error message");
     }
